@@ -1,0 +1,41 @@
+[Unit]
+Description=ragifix-mcp - serveur MCP pour ragifix
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=simple
+User=ragifix-mcp
+Group=ragifix-mcp
+
+EnvironmentFile=/etc/ragifix-mcp/ragifix-mcp.env
+
+ExecStart=/opt/ragifix-mcp/venv/bin/ragifix-mcp --config /etc/ragifix-mcp/config.yaml
+Restart=on-failure
+RestartSec=10
+
+# --- Durcissement : moindre privilège ---------------------------------
+NoNewPrivileges=true
+ProtectSystem=strict
+ProtectHome=true
+PrivateTmp=true
+PrivateDevices=true
+ProtectKernelTunables=true
+ProtectKernelModules=true
+ProtectControlGroups=true
+RestrictSUIDSGID=true
+RestrictRealtime=true
+RestrictNamespaces=true
+LockPersonality=true
+MemoryDenyWriteExecute=true
+RemoveIPC=true
+
+# Aucun état local persistant : ragifix-mcp ne fait que relayer des appels
+# HTTP vers ragifix. Pas de ReadWritePaths nécessaire.
+
+# Par défaut (server.host=127.0.0.1 dans config.yaml), ce service n'est
+# joignable que depuis la machine locale. Pour un accès distant, voir le
+# README ("Accès distant") avant de changer server.host.
+
+[Install]
+WantedBy=multi-user.target

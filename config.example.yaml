@@ -1,0 +1,26 @@
+# =============================================================================
+# Configuration de ragifix-mcp
+# Aucun secret ici : uniquement des références à des variables
+# d'environnement (champs `*_env`).
+#
+# Ce fichier ne sert qu'à indiquer où écouter (server) et où se trouve le
+# serveur ragifix principal à interroger (ragifix). Toute la logique RAG
+# (chunking, embedding, base vectorielle) reste entièrement dans ragifix.
+# =============================================================================
+
+server:
+  # Local par défaut (127.0.0.1) : le client de chat doit tourner sur la
+  # même machine. Pour un accès distant, changer host (ex: 0.0.0.0) et
+  # placer un reverse-proxy TLS devant — voir le README, section
+  # "Accès distant".
+  host: 127.0.0.1
+  port: 8422
+  auth_token_env: RAGIFIX_MCP_TOKEN   # token dédié, indépendant de celui de ragifix
+
+ragifix:
+  base_url: "http://127.0.0.1:8421"
+  api_token_env: RAGIFIX_API_TOKEN     # le token de l'API ragifix (pas celui du serveur MCP)
+  timeout_seconds: 60
+
+logging:
+  level: INFO

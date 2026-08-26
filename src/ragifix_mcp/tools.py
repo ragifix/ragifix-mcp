@@ -14,7 +14,6 @@ client.
 
 from __future__ import annotations
 
-import base64
 import logging
 
 from mcp.server.mcpserver import MCPServer
@@ -55,13 +54,18 @@ class GetDocumentToolResult(BaseModel):
     document: DocumentInfo | None = None
 
 
-class DeleteDocumentToolResult(BaseModel):
-    doc_id: str
-    deleted: bool
-
-
 class HealthToolResult(BaseModel):
     ragifix_reachable: bool
+
+
+class SourceInfo(BaseModel):
+    name: str
+    description: str
+    enabled: bool
+
+
+class ListSourcesToolResult(BaseModel):
+    sources: list[SourceInfo]
 
 
 def register_tools(mcp: MCPServer, client: RagifixAsyncClient) -> None:
@@ -100,48 +104,18 @@ def register_tools(mcp: MCPServer, client: RagifixAsyncClient) -> None:
         return GetDocumentToolResult(found=True, doc_id=doc_id, document=DocumentInfo(**document))
 
     @mcp.tool()
-    async def rag_add_document(
-        doc_id: str,
-        content: str,
-        extension: str,
-        content_encoding: str = "utf8",
-        metadata: dict | None = None,
-    ) -> DocumentInfo:
-        """Ajoute ou met à jour un document dans ragifix.
-
-        Args:
-            doc_id: Identifiant unique du document (une mise à jour avec le
-                même doc_id remplace le document existant).
-            content: Le contenu du document. Texte brut si
-                content_encoding="utf8" (adapté à txt/md), ou contenu
-                binaire encodé en base64 si content_encoding="base64"
-                (requis pour pdf/docx/pptx/xlsx/html).
-            extension: Extension du fichier sans le point (ex: "txt", "md",
-                "pdf", "docx", "pptx", "xlsx", "html").
-            content_encoding: "utf8" ou "base64" (défaut: "utf8").
-            metadata: Métadonnées libres à associer au document.
-        """
-        if content_encoding == "base64":
-            raw = base64.b64decode(content)
-        elif content_encoding == "utf8":
-            raw = content.encode("utf-8")
-        else:
-            raise ValueError("content_encoding doit valoir 'utf8' ou 'base64'")
-        result = await client.put_document(doc_id, raw, extension, metadata or {})
-        return DocumentInfo(**result)
-
-    @mcp.tool()
-    async def rag_delete_document(doc_id: str) -> DeleteDocumentToolResult:
-        """Supprime un document de ragifix. Sans effet si le document n'existait pas déjà (idempotent).
-
-        Args:
-            doc_id: Identifiant du document à supprimer.
-        """
-        existed = await client.delete_document(doc_id)
-        return DeleteDocumentToolResult(doc_id=doc_id, deleted=existed)
-
-    @mcp.tool()
     async def rag_health() -> HealthToolResult:
         """Vérifie que le service ragifix sous-jacent est joignable."""
         reachable = await client.health()
         return HealthToolResult(ragifix_reachable=reachable)
+
+    @mcp.tool()
+    async def rag_list_sources() -> ListSourcesToolResult:
+        """Liste les sources de documents disponibles dans ragifix.
+
+        Chaque source représente un ensemble de documents indexés (ex: un dossier local,
+        un site SharePoint). Utilisez cette liste pour déterminer quelle source consulter
+        en fonction de votre question.
+        """
+        sources = await client.get_sources()
+        return ListSourcesToolResult(sources=[SourceInfo(**s) for s in sources])

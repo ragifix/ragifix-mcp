@@ -26,6 +26,7 @@ class ServerConfig(BaseModel):
     host: str = "127.0.0.1"
     port: int = 8422
     auth_token_env: str
+    instructions: str = ""
 
     @property
     def auth_token(self) -> str:
@@ -52,9 +53,15 @@ class LoggingConfig(BaseModel):
     level: Literal["DEBUG", "INFO", "WARNING", "ERROR"] = "INFO"
 
 
+class McpSourceConfig(BaseModel):
+    name: str
+    description: str
+
+
 class AppConfig(BaseModel):
     server: ServerConfig
     ragifix: RagifixConfig
+    mcp_sources: list[McpSourceConfig] = Field(default_factory=list)
     logging: LoggingConfig = Field(default_factory=LoggingConfig)
 
 

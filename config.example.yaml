@@ -16,11 +16,17 @@ server:
   host: 127.0.0.1
   port: 8422
   auth_token_env: RAGIFIX_MCP_TOKEN   # token dédié, indépendant de celui de ragifix
+  # Description de l'outil MCP pour le LLM (ce qu'il peut faire)
+  instructions: "Donne accès à la base documentaire ragifix : recherche sémantique (rag_query), listing des documents et des sources indexées. Utilise rag_list_sources pour voir quelles sources sont disponibles, puis rag_query pour chercher dedans."
 
 ragifix:
   base_url: "http://127.0.0.1:8421"
   api_token_env: RAGIFIX_API_TOKEN     # le token de l'API ragifix (pas celui du serveur MCP)
   timeout_seconds: 60
+
+# Sources locales (fallback si ragifix n'est pas joignable ou sans sources configurées).
+# Les descriptions du collector (via ragifix) prennent la priorité si les deux sont configurées.
+mcp_sources: []
 
 logging:
   level: INFO

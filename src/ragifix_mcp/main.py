@@ -30,14 +30,17 @@ def build_app(config: AppConfig):
         timeout=config.ragifix.timeout_seconds,
     )
 
+    # Vérifier si des sources locales sont configurées
+    if config.mcp_sources:
+        logger.info(
+            "Sources MCP locales configurées (%d source(s)). "
+            "Si ragifix expose aussi des sources, celles du collector prendront la priorité.",
+            len(config.mcp_sources),
+        )
+
     mcp = MCPServer(
         name="ragifix-mcp",
-        instructions=(
-            "Donne accès à la base documentaire ragifix : recherche sémantique "
-            "(rag_query), ajout et suppression de documents, et listing de ce qui "
-            "est indexé. Utilise rag_query pour répondre à des questions à partir "
-            "des documents indexés."
-        ),
+        instructions=config.server.instructions or "Donne accès à la base documentaire ragifix.",
     )
     register_tools(mcp, client)
 

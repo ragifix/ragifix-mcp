@@ -2,7 +2,6 @@
 
 from __future__ import annotations
 
-import json
 from urllib.parse import quote
 
 import httpx
@@ -32,26 +31,6 @@ class RagifixAsyncClient:
         response.raise_for_status()
         return response.json()
 
-    async def put_document(self, doc_id: str, content: bytes, extension: str, metadata: dict | None = None) -> dict:
-        params = {"extension": extension}
-        if metadata:
-            params["metadata"] = json.dumps(metadata, ensure_ascii=False)
-        response = await self._client.put(
-            f"/documents/{_encode_doc_id(doc_id)}",
-            params=params,
-            content=content,
-            headers={"Content-Type": "application/octet-stream"},
-        )
-        response.raise_for_status()
-        return response.json()
-
-    async def delete_document(self, doc_id: str) -> bool:
-        response = await self._client.delete(f"/documents/{_encode_doc_id(doc_id)}")
-        if response.status_code == 404:
-            return False
-        response.raise_for_status()
-        return True
-
     async def get_document(self, doc_id: str) -> dict | None:
         response = await self._client.get(f"/documents/{_encode_doc_id(doc_id)}")
         if response.status_code == 404:
@@ -71,6 +50,11 @@ class RagifixAsyncClient:
             return response.status_code == 200
         except httpx.HTTPError:
             return False
+
+    async def get_sources(self) -> list[dict]:
+        response = await self._client.get("/sources")
+        response.raise_for_status()
+        return response.json()["sources"]
 
     async def aclose(self) -> None:
         await self._client.aclose()

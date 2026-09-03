@@ -75,13 +75,20 @@ server:
 
 Cela permet aux utilisateurs de personnaliser la description sans modifier le code.
 
-### 4. Gestion des sources
+### 4. Origine des documents
+
+Les modèles `QueryResultItem` et `DocumentInfo` exposent un champ `origin`
+(`{kind, uri, label}` ou `null`), repris tel quel depuis la réponse de
+ragifix. Les docstrings de `rag_query` et `rag_get_document` invitent le
+LLM à citer `origin.uri` pour indiquer où trouver le document source.
+
+### 5. Gestion des sources
 
 - **Source de vérité** : ragifix-collector pousse les sources via `POST /sources`
 - **Fallback** : `mcp_sources` dans config.yaml (pour les configs sans collector)
 - **Priorité** : si les deux sont configurés, warning dans les logs, les sources de collector prennent la priorité
 
-### 5. Authentification
+### 6. Authentification
 
 Deux niveaux :
 - **Entre client et MCP** : `RAGIFIX_MCP_TOKEN` (configuré dans `server.auth_token_env`)
@@ -89,7 +96,7 @@ Deux niveaux :
 
 Pas de distinction read/write pour le moment (TODO).
 
-### 6. Transport
+### 7. Transport
 
 - **Streamable HTTP** (standard MCP pour serveurs distants)
 - Path : `/mcp`

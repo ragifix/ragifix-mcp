@@ -24,12 +24,19 @@ from .ragifix_client import RagifixAsyncClient
 logger = logging.getLogger(__name__)
 
 
+class OriginInfo(BaseModel):
+    kind: str
+    uri: str
+    label: str = ""
+
+
 class QueryResultItem(BaseModel):
     chunk_id: str
     doc_id: str
     text: str
     score: float
     metadata: dict
+    origin: OriginInfo | None = None
 
 
 class QueryToolResult(BaseModel):
@@ -42,6 +49,7 @@ class DocumentInfo(BaseModel):
     chunk_count: int
     metadata: dict
     updated_at: str
+    origin: OriginInfo | None = None
 
 
 class ListDocumentsToolResult(BaseModel):
@@ -73,6 +81,10 @@ def register_tools(mcp: MCPServer, client: RagifixAsyncClient) -> None:
     async def rag_query(query: str, top_k: int = 5) -> QueryToolResult:
         """Recherche les passages les plus pertinents dans la base documentaire ragifix pour une question donnée.
 
+        Chaque résultat peut inclure `origin.uri` : le lien ou chemin vers le
+        document source. Cite-le pour indiquer à l'utilisateur où trouver le
+        document d'origine.
+
         Args:
             query: La question ou le texte à rechercher.
             top_k: Nombre maximum de résultats à retourner (défaut: 5).
@@ -94,6 +106,9 @@ def register_tools(mcp: MCPServer, client: RagifixAsyncClient) -> None:
     @mcp.tool()
     async def rag_get_document(doc_id: str) -> GetDocumentToolResult:
         """Retourne le détail d'un document indexé dans ragifix (nombre de chunks, métadonnées, date de mise à jour).
+
+        `document.origin.uri`, si présent, est le lien ou chemin vers le
+        document source.
 
         Args:
             doc_id: Identifiant du document.

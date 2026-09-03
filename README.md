@@ -151,6 +151,8 @@ des connecteurs/serveurs MCP).
 | `rag_delete_document(doc_id)` | Supprime un document (idempotent). |
 | `rag_health()` | Vérifie que `ragifix` est joignable. |
 
+Les résultats de `rag_query`, `rag_get_document` et `rag_list_documents` incluent un champ `origin` (`{kind, uri, label}` ou `null`) : le lien ou chemin le plus rapide vers le document source, à citer pour indiquer à l'utilisateur où le trouver.
+
 ## Accès distant
 
 Par défaut (`server.host: 127.0.0.1`), le serveur n'est joignable que
